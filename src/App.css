@@ -36,3 +36,17 @@
     transform: rotate(360deg);
   }
 }
+.link{
+  text-decoration: none;
+  color: aliceblue;
+}
+.box{
+  width: 400px;
+  margin: auto;
+  margin-top: 100px;
+  text-align: center;
+}
+.button{
+  width:50%;
+  
+}

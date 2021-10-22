@@ -1,13 +1,18 @@
-import "./App.css";
-import Header from "./components/Header";
-import Home from "./components/Home";
-import Login from "./components/Login";
-import { Route } from "react-router";
-import SignUp from "./components/SignUp";
-import { useState } from "react";
+import { useState, useEffect } from 'react';
+import { Switch, Route } from 'react-router-dom';
+import { Container } from 'react-bootstrap';
+import Navigation from './components/Navigation/Navigation';
+import Login from './components/Login/Login';
+import Signup from './components/Signup/Signup';
+import Home from './components/Home/Home';
+import Restaurants from './components/Restaurants/Restaurants';
+import RestaurantDetail from './components/RestaurantDetail/RestaurantDetail';
+import RestaurantCreate from './components/RestaurantCreate/RestaurantCreate';
+import './App.css';
+import API_URL from './apiConfig';
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(
+	const [loggedIn, setLoggedIn] = useState(
 		localStorage.getItem('token') ? true : false
 	);
 	const [userInfo, setUserInfo] = useState(null);
@@ -17,9 +22,10 @@ function App() {
 		console.log(localStorage.getItem('token'));
 		setLoggedIn(true);
 	};
-  const getUserInfo = async () => {
+
+	const getUserInfo = async () => {
 		try {
-			const response = await fetch("http://127.0.0.1:8000/users/me/", {
+			const response = await fetch(API_URL + 'users/me/', {
 				headers: {
 					Authorization: `Token ${localStorage.getItem('token')}`,
 				},
@@ -31,10 +37,11 @@ function App() {
 			console.log(error);
 		}
 	};
-  const handleLogout = async () => {
+
+	const handleLogout = async () => {
 		console.log(localStorage.getItem('token'));
 		try {
-			const response = await fetch("http://127.0.0.1:8000/token/logout/", {
+			const response = await fetch(API_URL + 'token/logout/', {
 				method: 'POST',
 				headers: {
 					Authorization: `Token ${localStorage.getItem('token')}`,
@@ -49,16 +56,51 @@ function App() {
 		} catch (err) {
 			console.log(err);
 		}
-  }
+	};
 
-  return (
-    < >
-      <Header loggedIn={loggedIn} handleLogout={handleLogout} userInfo={userInfo} />
-      <Route exact path="/" render={() => <Home getUserInfo={getUserInfo} />} />
-      <Route path="/login" render={() => <Login handleSetLoggedIn={handleSetLoggedIn} />} />
-      <Route path="/signup" render={() => <SignUp />} />
-    </>
-  );
+	useEffect(() => {
+		if (loggedIn) {
+			getUserInfo();
+		}
+	}, []);
+
+	return (
+		<>
+			<Navigation
+				loggedIn={loggedIn}
+				handleLogout={handleLogout}
+				userInfo={userInfo}
+			/>
+			<main>
+				<Container>
+					<Switch>
+						<Route path='/' exact component={Home} />
+						<Route
+							exact
+							path='/login'
+							render={() => <Login handleSetLoggedIn={handleSetLoggedIn} />}
+						/>
+						<Route exact path='/signup' component={Signup} />
+						<Route
+							path='/restaurants/new'
+							render={() => <RestaurantCreate loggedIn={loggedIn} />}
+						/>
+						<Route
+							path='/restaurants'
+							exact
+							render={() => <Restaurants loggedIn={loggedIn} />}
+						/>
+						<Route
+							path='/restaurants/:id'
+							render={() => (
+								<RestaurantDetail userInfo={userInfo} loggedIn={loggedIn} />
+							)}
+						/>
+					</Switch>
+				</Container>
+			</main>
+		</>
+	);
 }
 
 export default App;
